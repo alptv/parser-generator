@@ -1,0 +1,43 @@
+grammar Calculator
+
+miss : "[ \t\n\r]+" ;
+
+terminals :
+    lbrace = "\\("              ;
+    rbrace = "\\)"              ;
+    plus   = "\\+"              ;
+    minus  = "-"                ;
+    power  = "\\*\\*"           ;
+    mul    = "\\*"              ;
+    div    = "/"                ;
+    num    = "([1-9][0-9]*)|0"  ;
+
+
+non-terminals:
+    E            returns <double v>;
+    ER <double acc> returns <double v>;
+    TR <double acc> returns <double v>;
+    T            returns <double v>;
+    P            returns <double v>;
+    PR  <double acc> returns <double v>;
+    V            returns <double v>;
+
+start : E ;
+
+rules :
+    E  -> T ER[T1.v] {E0.v = ER2.v;}                                     ;
+    ER -> EPS {ER0.v = ER0.acc;}                                         ;
+    ER -> plus T {ER0.v = ER0.acc + T2.v;} ER[ER0.v] {ER0.v = ER3.v;}    ;
+    ER -> minus T {ER0.v = ER0.acc - T2.v;} ER[ER0.v] {ER0.v = ER3.v;}   ;
+    T  -> P TR[P1.v] {T0.v = TR2.v;}                                     ;
+    TR -> EPS {TR0.v = TR0.acc;}                                         ;
+    TR -> div P {TR0.v = TR0.acc / P2.v;} TR[TR0.v] {TR0.v = TR3.v;}     ;
+    TR -> mul P {TR0.v = TR0.acc * P2.v;} TR[TR0.v] {TR0.v = TR3.v;}     ;
+    P -> V PR[V1.v] {P0.v = PR2.v;}         ;
+    PR -> power P {PR0.v = Math.pow(PR0.acc, P2.v);} ;
+    PR -> EPS {PR0.v= PR0.acc;};
+    V ->  minus V {V0.v = -1 * V2.v;}                                    ;
+    V  -> lbrace E rbrace {V0.v = E2.v;}                                 ;
+    V  -> num {V0.v = Double.parseDouble(num1.getText());}               ;
+
+
